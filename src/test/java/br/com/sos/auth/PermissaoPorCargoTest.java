@@ -19,12 +19,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** Garante que @PreAuthorize recusa no servidor quem não tem o papel (RNF002). */
+/** Garante que @PreAuthorize recusa no servidor quem não tem o cargo (RNF002). */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(PermissaoPorPapelTest.RotasDeTeste.class)
-class PermissaoPorPapelTest {
+@Import(PermissaoPorCargoTest.RotasDeTeste.class)
+class PermissaoPorCargoTest {
 
     @TestConfiguration
     @RestController
@@ -65,7 +65,7 @@ class PermissaoPorPapelTest {
     }
 
     @Test
-    void cadaPapelAcessaSuaFuncao() throws Exception {
+    void cadaCargoAcessaSuaFuncao() throws Exception {
         mvc.perform(get("/teste/atendente").session(login("atendente"))).andExpect(status().isOk());
         mvc.perform(get("/teste/prestador").session(login("prestador"))).andExpect(status().isOk());
     }

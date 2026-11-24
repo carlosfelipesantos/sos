@@ -10,7 +10,7 @@ import org.hibernate.annotations.Immutable;
 import java.time.LocalDateTime;
 
 /**
- * Registro de andamento ou mudança de status da OS.
+ * Registro de andamento ou mudança de status da OS (diagrama de classes: Historico).
  * Depois de gravado não pode ser alterado (RF004, RNF005): por isso @Immutable.
  * statusAnterior e statusNovo ficam nulos quando é só uma observação de andamento.
  */
@@ -26,12 +26,11 @@ public class Historico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "os_id", nullable = false)
-    private OrdemServico os;
-
     @Column(length = 2000)
-    private String observacao;
+    private String descricao;
+
+    @Column(name = "data_historico", nullable = false)
+    private LocalDateTime dataHistorico;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status_anterior", length = 30)
@@ -41,17 +40,20 @@ public class Historico {
     @Column(name = "status_novo", length = 30)
     private StatusOS statusNovo;
 
+    /** Relacionamento "Possui": a OS possui o histórico. */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "os_id", nullable = false)
+    private OrdemServico os;
+
+    /** Usuário que fez o registro (RNF005). */
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "data_hora", nullable = false)
-    private LocalDateTime dataHora;
-
     @PrePersist
     void aoCriar() {
-        if (dataHora == null) {
-            dataHora = LocalDateTime.now();
+        if (dataHistorico == null) {
+            dataHistorico = LocalDateTime.now();
         }
     }
 }

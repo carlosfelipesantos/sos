@@ -7,10 +7,10 @@ import java.util.Optional;
 
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    boolean existsByCpfCnpj(String cpfCnpj);
+    boolean existsByCpf(String cpf);
 
-    Optional<Cliente> findByCpfCnpj(String cpfCnpj);
+    Optional<Cliente> findByCpf(String cpf);
 
     /** Busca por parte do nome (sem diferenciar maiúsculas) ou pelo CPF/CNPJ. */
-    List<Cliente> findByNomeContainingIgnoreCaseOrCpfCnpjContainingOrderByNome(String nome, String cpfCnpj);
+    List<Cliente> findByNomeClienteContainingIgnoreCaseOrCpfContainingOrderByNomeCliente(String nome, String cpf);
 }

@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface HistoricoRepository extends JpaRepository<Historico, Long> {
 
-    List<Historico> findByOsIdOrderByDataHoraAsc(Long osId);
+    List<Historico> findByOsIdOrderByDataHistoricoAsc(Long osId);
 }

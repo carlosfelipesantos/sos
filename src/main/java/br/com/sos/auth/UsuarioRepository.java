@@ -11,6 +11,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByLogin(String login);
 
-    /** Ex.: findByPapeisContainingOrderByNome(Papel.PRESTADOR) para o GET /prestadores. */
-    List<Usuario> findByPapeisContainingOrderByNome(Papel papel);
+    /** Ex.: findByCargosTipoCargoOrderByNomeUsuario(Cargo.PRESTADOR) para o GET /prestadores. */
+    List<Usuario> findByCargosTipoCargoOrderByNomeUsuario(String tipoCargo);
 }

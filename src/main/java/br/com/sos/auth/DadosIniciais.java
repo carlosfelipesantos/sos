@@ -8,33 +8,44 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
-/** Cria os usuários de teste na primeira vez que o sistema sobe. Todos com senha 123. */
+/** Cria os cargos e os usuários de teste na primeira vez que o sistema sobe. Todos com senha 123. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DadosIniciais implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
+    private final CargoRepository cargoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        criar("atendente", "Atendente Teste", Set.of(Papel.ATENDENTE));
-        criar("prestador", "Prestador Teste", Set.of(Papel.PRESTADOR));
-        criar("prestador2", "Segundo Prestador", Set.of(Papel.PRESTADOR));
-        criar("autonomo", "Prestador Autônomo", Set.of(Papel.ATENDENTE, Papel.PRESTADOR));
+        Cargo atendente = cargo(Cargo.ATENDENTE);
+        Cargo prestador = cargo(Cargo.PRESTADOR);
+
+        criar("atendente", "Atendente Teste", Usuario.TIPO_PESSOA, Set.of(atendente));
+        criar("prestador", "Prestador Teste", Usuario.TIPO_PESSOA, Set.of(prestador));
+        criar("prestador2", "Equipe de Manutenção", Usuario.TIPO_EQUIPE, Set.of(prestador));
+        criar("autonomo", "Prestador Autônomo", Usuario.TIPO_PESSOA, Set.of(atendente, prestador));
     }
 
-    private void criar(String login, String nome, Set<Papel> papeis) {
+    private Cargo cargo(String tipoCargo) {
+        return cargoRepository.findByTipoCargo(tipoCargo)
+                .orElseGet(() -> cargoRepository.save(new Cargo(tipoCargo)));
+    }
+
+    private void criar(String login, String nome, String tipoUsuario, Set<Cargo> cargos) {
         if (usuarioRepository.existsByLogin(login)) {
             return;
         }
         Usuario u = new Usuario();
         u.setLogin(login);
-        u.setNome(nome);
+        u.setNomeUsuario(nome);
+        u.setTipoUsuario(tipoUsuario);
+        u.setEmail(login + "@sos.local");
         u.setSenhaHash(passwordEncoder.encode("123"));
-        u.getPapeis().addAll(papeis);
+        u.getCargos().addAll(cargos);
         usuarioRepository.save(u);
-        log.info("Usuário de teste criado: {} / 123 ({})", login, papeis);
+        log.info("Usuário de teste criado: {} / 123", login);
     }
 }

@@ -40,7 +40,7 @@ class AuthControllerTest {
         mvc.perform(get("/auth/me").session(sessao))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.login").value("atendente"))
-                .andExpect(jsonPath("$.papeis[0]").value("ATENDENTE"));
+                .andExpect(jsonPath("$.cargos[0]").value("ATENDENTE"));
     }
 
     @Test

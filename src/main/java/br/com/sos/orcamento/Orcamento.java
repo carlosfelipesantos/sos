@@ -10,6 +10,10 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * Orçamento da OS (diagrama de classes: Orcamento).
+ * prazoDias e status não estão no diagrama, mas são obrigatórios pelo RF003.
+ */
 @Entity
 @Table(name = "orcamento", indexes = @Index(name = "idx_orcamento_os", columnList = "os_id"))
 @Getter
@@ -21,15 +25,18 @@ public class Orcamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "os_id", nullable = false)
-    private OrdemServico os;
+    /** BigDecimal em vez de float: valor em dinheiro precisa ser exato. */
+    @Column(name = "valor_orcamento", nullable = false, precision = 12, scale = 2)
+    private BigDecimal valorOrcamento;
 
     @Column(nullable = false, length = 2000)
     private String descricao;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal valor;
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
+    @Column(name = "data_decisao")
+    private LocalDateTime dataDecisao;
 
     @Column(name = "prazo_dias", nullable = false)
     private Integer prazoDias;
@@ -38,11 +45,20 @@ public class Orcamento {
     @Column(nullable = false, length = 20)
     private StatusOrcamento status;
 
-    /** Atendente que registrou a decisão do cliente (preenchido na aprovação/recusa). */
+    /** Relacionamento "Contem": a OS contém os orçamentos. */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "os_id", nullable = false)
+    private OrdemServico os;
+
+    /** Relacionamento "Define": atendente que registrou a decisão do cliente. */
     @ManyToOne
     @JoinColumn(name = "decidido_por_id")
     private Usuario decididoPor;
 
-    @Column(name = "data_decisao")
-    private LocalDateTime dataDecisao;
+    @PrePersist
+    void aoCriar() {
+        if (dataCriacao == null) {
+            dataCriacao = LocalDateTime.now();
+        }
+    }
 }

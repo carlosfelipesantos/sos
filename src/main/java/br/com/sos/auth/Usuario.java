@@ -8,6 +8,10 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Usuário do sistema (diagrama de classes: Usuario, relacionamento "Possui" com Cargo).
+ * login e senhaHash não estão no diagrama, mas são obrigatórios para o login (RNF001).
+ */
 @Entity
 @Table(name = "usuario")
 @Getter
@@ -15,12 +19,27 @@ import java.util.Set;
 @NoArgsConstructor
 public class Usuario {
 
+    /** Pessoa ou equipe (SRS 1.3: o prestador pode ser uma pessoa ou uma equipe). */
+    public static final String TIPO_PESSOA = "PESSOA";
+    public static final String TIPO_EQUIPE = "EQUIPE";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String nome;
+    @Column(name = "nome_usuario", nullable = false)
+    private String nomeUsuario;
+
+    private String email;
+
+    /** CPF do usuário, somente dígitos. String porque CPF não cabe em int e pode começar com zero. */
+    @Column(unique = true, length = 11)
+    private String cpf;
+
+    @Column(name = "tipo_usuario", nullable = false, length = 20)
+    private String tipoUsuario = TIPO_PESSOA;
+
+    private String telefone;
 
     @Column(nullable = false, unique = true)
     private String login;
@@ -29,13 +48,13 @@ public class Usuario {
     @Column(name = "senha_hash", nullable = false)
     private String senhaHash;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "usuario_papel", joinColumns = @JoinColumn(name = "usuario_id"))
-    @Column(name = "papel", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Set<Papel> papeis = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "usuario_cargo",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "cargo_id"))
+    private Set<Cargo> cargos = new HashSet<>();
 
-    public boolean temPapel(Papel papel) {
-        return papeis.contains(papel);
+    public boolean temCargo(String tipoCargo) {
+        return cargos.stream().anyMatch(c -> c.getTipoCargo().equals(tipoCargo));
     }
 }

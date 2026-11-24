@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Usuário logado, guardado na sessão.
@@ -17,27 +18,27 @@ import java.util.Set;
 public class UsuarioAutenticado implements UserDetails, CredentialsContainer {
 
     private final Long id;
-    private final String nome;
+    private final String nomeUsuario;
     private final String login;
-    private final Set<Papel> papeis;
+    private final Set<String> cargos;
     private String senhaHash;
 
     public UsuarioAutenticado(Usuario usuario) {
         this.id = usuario.getId();
-        this.nome = usuario.getNome();
+        this.nomeUsuario = usuario.getNomeUsuario();
         this.login = usuario.getLogin();
-        this.papeis = Set.copyOf(usuario.getPapeis());
+        this.cargos = usuario.getCargos().stream().map(Cargo::getTipoCargo).collect(Collectors.toUnmodifiableSet());
         this.senhaHash = usuario.getSenhaHash();
     }
 
-    public boolean temPapel(Papel papel) {
-        return papeis.contains(papel);
+    public boolean temCargo(String tipoCargo) {
+        return cargos.contains(tipoCargo);
     }
 
-    /** Papel ATENDENTE vira ROLE_ATENDENTE, usado em @PreAuthorize("hasRole('ATENDENTE')"). */
+    /** Cargo ATENDENTE vira ROLE_ATENDENTE, usado em @PreAuthorize("hasRole('ATENDENTE')"). */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return papeis.stream().map(p -> new SimpleGrantedAuthority("ROLE_" + p.name())).toList();
+        return cargos.stream().map(c -> new SimpleGrantedAuthority("ROLE_" + c)).toList();
     }
 
     @Override
