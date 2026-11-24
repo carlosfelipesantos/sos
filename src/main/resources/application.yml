@@ -1,0 +1,31 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30m
+
+spring:
+  application:
+    name: sos
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sos}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  sql:
+    init:
+      mode: always
+  web:
+    locale: pt_BR
+    locale-resolver: fixed
+
+sos:
+  cors:
+    origens: ${CORS_ORIGENS:http://localhost:5173,http://localhost:3000,http://localhost:4200}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

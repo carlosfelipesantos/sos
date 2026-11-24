@@ -1,0 +1,14 @@
+# Banco PostgreSQL para desenvolvimento: docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - sos-db:/var/lib/postgresql/data
+volumes:
+  sos-db:
