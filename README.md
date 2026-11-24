@@ -48,9 +48,30 @@ Todos os erros voltam no formato `{ "campo": "descricao", "mensagem": "..." }`.
 - Usuário logado como entidade (para gravar em `Historico`, `Orcamento.decididoPor`): `usuarioLogadoService.atual()`.
 - Número da OS: `ordemServicoRepository.proximoNumero()` (sequence `os_numero_seq`).
 - Prestadores para o select do front: `usuarioRepository.findByCargosTipoCargoOrderByNomeUsuario(Cargo.PRESTADOR)`.
-- CPF/CNPJ duplicado: `clienteRepository.existsByCpf(cpf)` → lançar `ConflitoException`.
+- Cliente para abrir a OS: `clienteService.buscarPorId(clienteId)` (lança 404 se não existir).
 - Ao encerrar ou cancelar a OS, preencher `dataFinalizacao`.
 - `Historico` é `@Immutable`: depois de gravado não muda.
+
+## Clientes (RF001) – só ATENDENTE
+
+| Endpoint | O que faz | Respostas |
+|---|---|---|
+| `POST /clientes` | Cadastra | 201 · 400 campo inválido · 409 `Cliente já cadastrado.` |
+| `PUT /clientes/{id}` | Edita | 200 · 400 · 404 · 409 se o CPF/CNPJ for de outro cliente |
+| `GET /clientes?busca=` | Lista (sem `busca`) ou pesquisa por parte do nome ou do CPF/CNPJ | 200 |
+| `GET /clientes/{id}` | Mostra um cliente | 200 · 404 |
+
+Corpo do POST e do PUT:
+
+```json
+{ "nome": "Maria da Silva", "cpfCnpj": "529.982.247-25", "telefone": "(17) 99999-0000", "email": "maria@email.com" }
+```
+
+- `nome`, `cpfCnpj` e `telefone` são obrigatórios; `email` é opcional (pode mandar `null` ou `""`).
+- `cpfCnpj` aceita CPF ou CNPJ, com ou sem máscara, e confere os dígitos verificadores (`CpfCnpjValidator`). É gravado e devolvido só com números.
+- Resposta: `{ "id": 1, "nome": "...", "cpfCnpj": "52998224725", "telefone": "...", "email": "...", "ativo": true }`.
+- No 409, para mostrar o cadastro que já existe (fluxo alternativo do RF001), o front chama `GET /clientes?busca={cpfCnpj}`.
+- Prestador recebe 403 em todos os endpoints de clientes.
 
 ## Modelo de dados (segue o diagrama de classes)
 
