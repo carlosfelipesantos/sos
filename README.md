@@ -73,6 +73,34 @@ Corpo do POST e do PUT:
 - No 409, para mostrar o cadastro que já existe (fluxo alternativo do RF001), o front chama `GET /clientes?busca={cpfCnpj}`.
 - Prestador recebe 403 em todos os endpoints de clientes.
 
+## Andamento e encerramento da OS (RF004, RF005)
+
+Fluxo da OS: `ABERTA` → `AGUARDANDO_APROVACAO` → `EM_EXECUCAO` → `PRONTA` → `ENCERRADA`. A OS pode ir para `CANCELADA` em qualquer etapa antes de `ENCERRADA`.
+
+| Endpoint | Quem | O que faz | Respostas |
+|---|---|---|---|
+| `POST /os/{id}/andamentos` | PRESTADOR responsável pela OS | Registra o andamento. Com `"status": "PRONTA"` conclui o serviço | 201 · 400 · 403 · 404 |
+| `POST /os/{id}/encerramento` | ATENDENTE | Encerra a OS pronta | 200 · 400 · 404 |
+| `POST /os/{id}/cancelamento` | ATENDENTE | Cancela a OS com motivo | 200 · 400 · 404 |
+
+Corpos:
+
+```json
+POST /os/{id}/andamentos    { "observacao": "Peça trocada, em teste", "status": null }
+POST /os/{id}/andamentos    { "observacao": "Serviço concluído", "status": "PRONTA" }
+POST /os/{id}/encerramento  { "observacao": "Cliente retirou o equipamento" }   (corpo opcional)
+POST /os/{id}/cancelamento  { "motivo": "Cliente desistiu do serviço" }
+```
+
+- Andamento: só com a OS `EM_EXECUCAO` (orçamento aprovado). `observacao` é obrigatória. `status` é opcional e só aceita `PRONTA`. Sem `status`, grava só a observação (`statusAnterior`/`statusNovo` nulos no histórico).
+- Só o prestador responsável registra andamento. Outro prestador recebe 403, e o autônomo também, quando a OS não é dele.
+- Encerrar: só OS `PRONTA`. Cancelar: qualquer status que ainda não seja final, com `motivo` obrigatório.
+- Encerrar e cancelar preenchem `dataFinalizacao`. Depois de `ENCERRADA` ou `CANCELADA`, a OS não aceita mais andamento, encerramento nem cancelamento (400).
+- Cada registro vai para o `Historico` com usuário, data e hora, e aparece no `GET /os/{id}`. O histórico não pode ser editado nem excluído.
+- O andamento responde com o item de histórico criado (`{ id, observacao, statusAnterior, statusNovo, dataHora, usuario }`). Encerrar e cancelar respondem com a OS resumida, como no `GET /os`.
+- Cancelar uma OS `AGUARDANDO_APROVACAO` bloqueia a decisão do orçamento pendente (`POST /orcamentos/{id}/decisao` → 400).
+- Para mudar o status sem corrida entre duas requisições, a OS é lida com trava de linha: `ordemServicoRepository.buscarParaAlterar(id)`.
+
 ## Modelo de dados (segue o diagrama de classes)
 
 | Classe | Atributos |

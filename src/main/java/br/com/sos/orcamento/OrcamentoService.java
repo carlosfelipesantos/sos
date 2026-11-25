@@ -77,6 +77,10 @@ public class OrcamentoService {
         if (orcamento.getStatus() != StatusOrcamento.PENDENTE) {
             throw new RegraNegocioException("status", "O orçamento precisa estar pendente para decisão.");
         }
+        // OS cancelada (RF005) com orçamento pendente: a decisão não pode mais tirar a OS de CANCELADA.
+        if (orcamento.getOs().getStatus() != StatusOS.AGUARDANDO_APROVACAO) {
+            throw new RegraNegocioException("status", "A OS deste orçamento não está mais aguardando aprovação.");
+        }
 
         Usuario atendente = toUsuario(atendenteLogado);
         if (atendente == null) {
